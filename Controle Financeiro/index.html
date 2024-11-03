@@ -11,8 +11,31 @@
         .balance { font-size: 24px; margin: 20px 0; }
         input, select, button { padding: 8px; margin: 5px; width: 100%; }
         .transaction { display: flex; justify-content: space-between; padding: 8px; border-bottom: 1px solid #ccc; }
-        .transaction.income { color: green; }
-        .transaction.expense { color: red; }
+        /* Estilos adicionais para a tabela */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+        th {
+            background-color: #f4f4f4;
+            color: #333;
+            font-weight: bold;
+            padding: 10px;
+            border: 1px solid #ddd;
+        }
+        td {
+            padding: 10px;
+            border: 1px solid #ddd;
+            text-align: left;
+        }
+        tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+        tr:hover {
+            background-color: #e2e2e2;
+        }
     </style>
 </head>
 <body>
@@ -21,16 +44,32 @@
         <div class="balance">Saldo: R$ <span id="balance">0.00</span></div>
         
         <!-- Formulário para adicionar transações -->
+        <input type="date" id="date">
         <input type="text" id="description" placeholder="Descrição">
         <input type="number" id="amount" placeholder="Valor">
-        <select id="type">
-            <option value="income">Receita</option>
-            <option value="expense">Despesa</option>
+        <select id="category">
+            <option value="" disabled selected>Categoria</option>
+            <option value="Alimentação">Alimentação</option>
+            <option value="Combustível">Combustível</option>
+            <option value="Farmácia">Farmácia</option>
+            <option value="Diversos">Diversos</option>
         </select>
         <button onclick="addTransaction()">Adicionar Transação</button>
         
-        <!-- Lista de transações -->
-        <div id="transactions"></div>
+         <!-- Tabela de transações -->
+         <table>
+            <thead>
+                <tr>
+                    <th>Data</th>
+                    <th>Descrição</th>
+                    <th>Valor</th>
+                    <th>Tipo</th>
+                </tr>
+            </thead>
+            <tbody id="transactions">
+                <!-- As transações serão inseridas aqui -->
+            </tbody>
+        </table>
     </div>
 
     <script>
@@ -42,15 +81,16 @@
             // Pega os valores do formulário
             const description = document.getElementById('description').value;
             const amount = parseFloat(document.getElementById('amount').value);
-            const type = document.getElementById('type').value;
+            const category = document.getElementById('category').value;
+            const date = document.getElementById('date').value;
             
-            if (description === '' || isNaN(amount) || amount <= 0) {
+            if (description === '' || isNaN(amount) || amount <= 0 || date === '') {
                 alert('Por favor, preencha todos os campos corretamente.');
                 return;
             }
 
             // Cria uma nova transação
-            const transaction = { description, amount, type };
+            const transaction = { description, amount, category, date };
             transactions.push(transaction);
 
             // Atualiza o saldo e exibe as transações
@@ -60,12 +100,13 @@
             // Limpa o formulário
             document.getElementById('description').value = '';
             document.getElementById('amount').value = '';
+            document.getElementById('date').value = '';
         }
 
         function updateBalance() {
             balance = 0;
             transactions.forEach(transaction => {
-                balance += transaction.type === 'income' ? transaction.amount : -transaction.amount;
+                balance += transaction.amount;
             });
             document.getElementById('balance').innerText = balance.toFixed(2);
         }
@@ -75,13 +116,16 @@
             transactionsContainer.innerHTML = '';
 
             transactions.forEach(transaction => {
-                const transactionElement = document.createElement('div');
-                transactionElement.classList.add('transaction', transaction.type);
-                transactionElement.innerHTML = `
-                    <span>${transaction.description}</span>
-                    <span>R$ ${transaction.amount.toFixed(2)}</span>
+                const row = document.createElement('tr');
+                
+                row.innerHTML = `
+                    <td>${transaction.date}</td>
+                    <td>${transaction.description}</td>
+                    <td>R$ ${transaction.amount.toFixed(2)}</td>
+                    <td>${transaction.category}</td>
                 `;
-                transactionsContainer.appendChild(transactionElement);
+                
+                transactionsContainer.appendChild(row);
             });
         }
     </script>
